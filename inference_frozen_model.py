@@ -15,6 +15,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--model',default='resnet50' , type=str)
 parser.add_argument('--batchsize',default=1 , type=int)
 parser.add_argument('--imgsize',default=224 , type=int)
+parser.add_argument('--arch',default='arm' , type=str)
 
 
 args = parser.parse_args()
@@ -22,6 +23,7 @@ args = parser.parse_args()
 model_name = args.model
 batch_size = args.batchsize
 size = args.imgsize
+arch_type = args.arch
 # model_name = "resnet50"
 # size=224
 
@@ -84,7 +86,10 @@ mod, params = relay.frontend.from_tensorflow(graph_def, layout=None, shape=shape
 print("Tensorflow protobuf imported to relay frontend.")
 print("-"*10,"Load frozen model",time.time()-load_model,"s","-"*10)
 
-target = tvm.target.arm_cpu()
+if arch_type == "intel":
+    target = "llvm"
+else:
+    target = tvm.target.arm_cpu()
 
 ctx = tvm.cpu()
 
