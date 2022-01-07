@@ -99,6 +99,7 @@ print("-"*10,"Compile style : create_executor vm ","-"*10)
 build_time = time.time()
 with tvm.transform.PassContext(opt_level=3):
     # executor = relay.build_module.create_executor("vm", mod, tvm.cpu(0), target)
+    mod = relay.transform.InferType()(mod)
     executor = relay.vm.compile(mod, target=target, params=params)
 
 print("-"*10,"Build latency : ",time.time()-build_time,"s","-"*10)
