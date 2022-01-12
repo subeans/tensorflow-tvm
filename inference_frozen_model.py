@@ -102,8 +102,24 @@ with tvm.transform.PassContext(opt_level=3):
     mod = relay.transform.InferType()(mod)
     executor = relay.vm.compile(mod, target=target, params=params)
 
-print("-"*10,"Build latency : ",time.time()-build_time,"s","-"*10)
+print("-"*10,"VM Build latency : ",time.time()-build_time,"s","-"*10)
 
+print("-"*10,"Compile style : create_graph_executor ","-"*10)
+build_time = time.time()
+with tvm.transform.PassContext(opt_level=3):
+    # executor = relay.build_module.create_executor("vm", mod, tvm.cpu(0), target)
+    mod = relay.transform.InferType()(mod)
+    graph, lib, params = relay.build(mod, target=target, params=params)
+
+print("-"*10,"Graph Build latency : ",time.time()-build_time,"s","-"*10)
+
+print("-"*10,"Graph Executor RUN,"-"*10)
+from tvm.contrib import graph_executor
+m = graph_executor.create(graph, lib, dev)
+m.set_input(**params)
+m.run()
+      
+print("-"*10,"VM Executor RUN,"-"*10)
 # executor.evaluate()(data,**params)
 vm = VirtualMachine(executor,ctx)
 _out = vm.invoke("main",data)
