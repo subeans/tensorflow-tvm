@@ -113,7 +113,7 @@ with tvm.transform.PassContext(opt_level=3):
 
 print("-"*10,"Graph Build latency : ",time.time()-build_time,"s","-"*10)
 
-print("-"*10,"Graph Executor RUN,"-"*10)
+print("-"*10,"Graph Executor RUN","-"*10)
 from tvm.contrib import graph_executor
 m = graph_executor.create(graph, lib, ctx)
 m.set_input(**params)
