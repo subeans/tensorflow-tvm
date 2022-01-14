@@ -1,11 +1,11 @@
-import tensorflow as tf
+#import tensorflow as tf
 from tvm import relay
 import numpy as np 
 import tvm 
 from tvm.contrib import graph_executor
 from tvm.contrib import graph_runtime
 
-import tvm.relay.testing.tf as tf_testing
+#import tvm.relay.testing.tf as tf_testing
 import tvm.testing 
 import time
 import onnx
