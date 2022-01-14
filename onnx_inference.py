@@ -88,4 +88,4 @@ t = e(data_tvm).results
 t = np.array(t) * 1000
    
 print("="*10,"TVM time evaluator module","="*10)
-print('{} (batch={}): {} ms'.format('resnet50', batch_size, t.mean()))
+print('{} (batch={}): {} ms'.format((model_name, batch_size, t.mean()))
