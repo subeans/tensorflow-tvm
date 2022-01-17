@@ -43,23 +43,30 @@ data,image_shape = make_dataset(batch_size,size)
 shape_dict = {"input_1": data.shape}
 
 load_model = time.time()
-loaded_lib = tvm.runtime.load_module(f'./{model_name}_{batch_size}_{arch_type}.tar')
+graph_fn = f"./{model_name}_{batch_size}_{arch_type}.json"
+lib_fn = f"./{model_name}_{batch_size}_{arch_type}.tar"
+params_fn = f"./{model_name}_{batch_size}_{arch_type}.params"
+
+loaded_graph = open(graph_fn).read()
+loaded_mod = tvm.runtime.load_module(lib_fn)
+loaded_params = open(params_fn, "rb").read()
+
+loaded_rt = tvm.contrib.graph_runtime.create(loaded_graph, loaded_mod, ctx)
+loaded_rt.load_params(loaded_params)
 print('load_model time', (((time.time() - load_model) ) * 1000),"ms")
 
 #onnx_model = onnx.load(f'./{model_name}.onnx')
-
-
-module = graph_executor.GraphModule(loaded_lib["default"](ctx))
-module.set_input("input_1", data)
-module.run()
-out = module.get_output(0).asnumpy()
+#module = graph_executor.GraphModule(loaded_lib["default"](ctx))
+# module.set_input("input_1", data)
+# module.run()
+# out = module.get_output(0).asnumpy()
 
 measurements = 5
 iter_times = []
 print("-"*10,"time.time Module","-"*10)
 for i in range(measurements):
     start_time = time.time()
-    module.run(data = data)
+    loaded_rt.run(data = data)
     print(f"TVM {model_name}-{batch_size} inference_time : ",(time.time()-start_time)*1000,"ms")
     iter_times.append(time.time() - start_time)
 
@@ -70,7 +77,7 @@ print("\n")
 
 data_tvm = tvm.nd.array(data.astype('float32'))
 
-e = module.module.time_evaluator("run", ctx, number=5, repeat=1)
+e = loaded_rt.module.time_evaluator("run", ctx, number=5, repeat=1)
 t = e(data_tvm).results
 t = np.array(t) * 1000
    
