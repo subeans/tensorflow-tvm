@@ -58,7 +58,14 @@ with tvm.transform.PassContext(opt_level=3):
     graph, lib, params = relay.build_module.build(mod, target=target, params=params)
 
 if export :
-    lib.export_library(f"./{model_name}_{batch_size}_{arch_type}.tar")
+    #lib.export_library(f"./{model_name}_{batch_size}_{arch_type}.tar")
+    name = f"./{model_name}_{batch_size}_{arch_type}"
+    graph_fn, lib_fn, params_fn = [name+ext for ext in ('.json','.tar','.params')]
+    lib.export_library(lib_fn)
+    with open(graph_fn, 'w') as f:
+        f.write(graph)
+    with open(params_fn, 'wb') as f:
+        f.write(relay.save_param_dict(params))
 
 module = graph_runtime.create(graph, lib, ctx)
 
